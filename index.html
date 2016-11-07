@@ -1,0 +1,264 @@
+<html>
+<head>
+	<title>Chat</title>
+	<style>
+		#chat{
+			height:80%;
+			position: left;
+			color: black;
+			margin-left: 20px;
+			margin-top: 10px;
+			}
+		#contentWrap{
+			background-color: black;
+			display: none;
+			
+		}
+
+		#form{
+			width: 100%;
+			margin-left: 10px;
+			line-height: 20px;
+			margin-right: 10px;
+			margin-bottom: 10px;
+		}
+		#form1{
+			color: white;
+			position: absolute;
+			top : 50%;
+			left:28%;
+		}
+
+		#chatWrap{
+			
+			width: 62%;
+			border: 5px #000 solid;
+			border-right:10px #000 solid; 
+			height:96%;
+			position: absolute;
+			left:5px;
+			top:0px;
+			bottom: 0px;			
+			color: white;
+			background-color: #b19cd9;
+			
+		}
+		#nickWrap{
+			background-color: #7D1935;
+			position: absolute;
+			left:0px;
+			right:0px;
+			top:0px;
+			bottom: 0px;
+			width:100%;
+			height: 100%;
+		}
+		#users{
+			padding: 10px;
+			margin-top: 10px;
+			margin-right: 10px;
+			margin-bottom: 10px;
+			
+    			font-style: bold;
+			margin-left: 10px;
+    		}
+    		#userwrap{
+    			width: 36%;
+    			text-align: center;
+    			position: absolute;
+    			height:96%;
+			right:5px;
+			top:0px;
+			bottom: 0px;
+			border: 5px #000 solid;
+			background-color: #DDA0DD;
+			color: white;
+			font-style: bold;
+			font-weight: 10px;
+			font-family: Helvetica;
+
+    		}
+    		header {
+		    padding: 1px;
+		    color: white;
+		    background-color: black;
+		    clear: left;
+		    text-align: center;
+		}
+		.err {
+			color: red;
+			position: absolute;
+			right: 10px;
+   			padding: 5px;
+   			margin-left: 15px;
+
+
+		}
+		.whisper {
+			color: black;
+			position: absolute;
+			padding: 5px;
+			line-height: 20px;
+			margin-top: 10px;
+			left:25px;
+			margin-bottom: 15px;
+			background-color: grey;
+			font-style: italic;
+			border-radius: 8px;
+		}
+		.own_whisper {
+			color: black;
+			position: absolute;
+			padding: 5px;
+			line-height: 20px;
+			right:20px;
+			margin-bottom: 15px;
+			background-color: grey;
+			font-style: italic;
+			border-radius: 8px;
+		}
+		
+		.own_msg {
+			color: white;
+			position: absolute;
+			padding: 5px;
+			line-height: 20px;
+			right:10px;
+			margin-bottom: 15px;
+			background-color: #4d4dff;
+			border-radius: 8px;
+		}
+		.msg {
+			 position: absolute;
+   			 padding: 5px;
+   			 line-height: 20px;
+   			 margin-left: 10px;
+   			 margin-top: 20px;
+   			 margin-right: 20px;
+   			 margin-bottom: 15px;
+   			 border-radius: 8px;
+   			 background-color: white  ;
+			}
+
+		input{
+			border: 2px;
+			line-height: 2em;
+		}
+		input[type=submit] {
+    			height: 2.5em;
+    			padding:5px 15px; 
+			background:#ccc; 
+			border:0 none;
+			cursor:pointer;
+			-webkit-border-radius: 5px;
+			border-radius: 5px;
+		}
+	</style>
+</head>
+<body>
+	<div id="nickWrap">
+		<div id="form1">
+			<p align="center">Enter a username:</p>
+			<p id="nickError"></p>
+			<form id="setNick">
+				<input size="100%" id="nickname"></input>
+				<input type="submit", value="Submit"></input>
+			</form>
+		</div>
+	</div>
+	<div id="contentWrap">
+		<div id="chatWrap">
+			<header>
+   				<h1>Chat Window</h1>
+			</header>
+			<div id="chat"></div>
+			<div id="form">
+				<form id="send-message">
+					<input size="129" id="message"></input>
+					<input type="submit", value="Send"></input>
+				</form>
+			</div>
+		</div>
+		<div id="userwrap">
+			<header>
+				<h1> Users</h1>
+			</header>
+			<div id="users"></div>
+		</div>
+	</div>
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+	<script>document.getElementById("chatWrap").scrollTop = document.getElementById("chat").scrollHeight; </script>
+	<script>
+		jQuery(function($){
+			
+			var socket = io.connect();
+			var $nickForm = $('#setNick');
+			var $nickError = $('#nickError');
+			var $nickBox = $('#nickname');
+			var $users = $('#users');
+			var $messageForm = $('#send-message');
+			var $messageBox = $('#message');
+			var $chat = $('#chat');
+
+			$nickForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('new user', $nickBox.val(), function(data){
+					if(data){
+						$('#nickWrap').hide();
+						$('#contentWrap').show();
+					}
+					else{
+						$nickError.html('That username is already taken! Try again!');
+					}
+				});
+				$nickBox.val('');
+			});
+
+			socket.on('usernames',function(data){
+				var html ='';
+				for (var i = 0; i < data.length  ; i++) {
+					html += '<br><b>'+ data[i] + '</b><br>';
+				}
+				$users.html(html);
+			});
+
+			
+
+			$messageForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('send message', $messageBox.val(),function(data){
+					$chat.append('<br><span class="err"><b> Error :</b>' + data + "</span><br/><br>");
+				});
+				$messageBox.val('');
+			});
+
+		 /*	socket.on('load old messages', function(docs){
+				for(var i = docs.length -1 ; i>=0; i--){
+					displayMsg(docs[i]);
+				}
+
+			}); */
+
+			socket.on('new message',function(data){
+				displayMsg(data);
+			});
+			socket.on('own message',function(data){
+				$chat.append('<br><span class="own_msg"><b>' + data.nick + ':</b>' + data.msg + "</span><br/><br>");
+			});
+			function displayMsg(data){
+				$chat.append('<br><span class="msg"><b>' + data.nick + ':</b>' + data.msg + "</span><br/><br>");
+			
+			}
+			socket.on('whisper', function(data){
+				$chat.append('<br><span class="whisper"><b>' + data.nick + ':</b>' + data.msg + "</span><br/><br>");
+
+			});
+			socket.on('own whisper', function(data){
+				$chat.append('<br><span class="own_whisper"><b>To ' + data.nick + ':</b>'   + data.msg + "</span><br/><br>");
+
+			});
+		});
+	</script>
+</body>
+</html>
