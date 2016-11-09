@@ -41,7 +41,7 @@ io.sockets.on('connection',function(socket){
 	//socket.join('some room');
 	
 	socket.on('new user', function(data,callback){
-		if (data in users || data=='SERVER') {
+		if (data in users || data=='SERVER' || data =='') {
 			callback(false);
 			}
 		else{
