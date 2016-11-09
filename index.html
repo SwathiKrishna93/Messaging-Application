@@ -1,9 +1,10 @@
-<html>
-<head>
+<!-- <html>
+<head> -->
 	<title>Chat</title>
 	<style>
 		#chat{
-			height:80%;
+			min-height:80%;
+			height:auto;
 			position: left;
 			color: black;
 			margin-left: 20px;
@@ -31,16 +32,18 @@
 
 		#chatWrap{
 			
-			width: 62%;
+			width: 61%;
 			border: 5px #000 solid;
-			border-right:10px #000 solid; 
-			height:96%;
+			min-height:96%;
+			height:auto;
 			position: absolute;
 			left:5px;
 			top:0px;
 			bottom: 0px;			
 			color: white;
 			background-color: #b19cd9;
+			overflow-y: auto;
+			overflow-x: hidden; 
 			
 		}
 		#nickWrap{
@@ -51,7 +54,7 @@
 			top:0px;
 			bottom: 0px;
 			width:100%;
-			height: 100%;
+			min-height: 100%;
 		}
 		#users{
 			padding: 10px;
@@ -63,19 +66,50 @@
 			margin-left: 10px;
     		}
     		#userwrap{
-    			width: 36%;
+    			width: 18%;
     			text-align: center;
     			position: absolute;
-    			height:96%;
-			right:5px;
+    			min-height:96%;
+    			height:auto;
+			right:274px;
 			top:0px;
 			bottom: 0px;
-			border: 5px #000 solid;
+			border: 7px #000 solid;
 			background-color: #DDA0DD;
 			color: white;
 			font-style: bold;
 			font-weight: 10px;
 			font-family: Helvetica;
+			overflow-y: auto;
+			overflow-x:auto;
+
+    		}
+    		#rooms{
+			padding: 10px;
+			margin-top: 10px;
+			margin-right: 10px;
+			margin-bottom: 10px;
+			
+    			font-style: bold;
+			margin-left: 10px;
+    		}
+    		#Roomwrap{
+    			width: 18%;
+    			text-align: center;
+    			position: absolute;
+    			min-height:96%;
+    			height:auto;
+			right:5px;
+			top:0px;
+			bottom: 0px;
+			border: 5px #000 solid;
+			background-color:  #b19cd9;
+			color: white;
+			font-style: bold;
+			font-weight: 10px;
+			font-family: Helvetica;
+			overflow-y: auto;
+			overflow-x:auto;
 
     		}
     		header {
@@ -100,7 +134,7 @@
 			padding: 5px;
 			line-height: 20px;
 			margin-top: 10px;
-			left:25px;
+			margin-left: 0px;
 			margin-bottom: 15px;
 			background-color: grey;
 			font-style: italic;
@@ -111,7 +145,7 @@
 			position: absolute;
 			padding: 5px;
 			line-height: 20px;
-			right:20px;
+			right:10px;
 			margin-bottom: 15px;
 			background-color: grey;
 			font-style: italic;
@@ -132,7 +166,7 @@
 			 position: absolute;
    			 padding: 5px;
    			 line-height: 20px;
-   			 margin-left: 10px;
+   			 margin-left: 0px;
    			 margin-top: 20px;
    			 margin-right: 20px;
    			 margin-bottom: 15px;
@@ -154,8 +188,7 @@
 			border-radius: 5px;
 		}
 	</style>
-</head>
-<body>
+	
 	<div id="nickWrap">
 		<div id="form1">
 			<p align="center">Enter a username:</p>
@@ -166,33 +199,19 @@
 			</form>
 		</div>
 	</div>
-	<div id="contentWrap">
-		<div id="chatWrap">
-			<header>
-   				<h1>Chat Window</h1>
-			</header>
-			<div id="chat"></div>
-			<div id="form">
-				<form id="send-message">
-					<input size="129" id="message"></input>
-					<input type="submit", value="Send"></input>
-				</form>
-			</div>
-		</div>
-		<div id="userwrap">
-			<header>
-				<h1> Users</h1>
-			</header>
-			<div id="users"></div>
-		</div>
-	</div>
+	
 	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
-	<script src="http://localhost:3000/socket.io/socket.io.js"></script>
-	<script>document.getElementById("chatWrap").scrollTop = document.getElementById("chat").scrollHeight; </script>
-	<script>
+	<script src="socket.io/socket.io.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+	
+	<script type="text/javascript">
+		
 		jQuery(function($){
 			
 			var socket = io.connect();
+			window.switchRoom = function(room){
+				socket.emit('switchRoom', room);
+   			}
 			var $nickForm = $('#setNick');
 			var $nickError = $('#nickError');
 			var $nickBox = $('#nickname');
@@ -200,6 +219,7 @@
 			var $messageForm = $('#send-message');
 			var $messageBox = $('#message');
 			var $chat = $('#chat');
+			var $rooms = $('#rooms');
 
 			$nickForm.submit(function(e){
 				e.preventDefault();
@@ -224,13 +244,47 @@
 			});
 
 			
+			socket.on('updaterooms', function(rooms, current_room) {
+			        $('#rooms').empty();
+			        $.each(rooms, function(key, value) {
+			            if(value == current_room){
+			                $('#rooms').append('<div><br>' + value + '</br><br></div>');
+			            }
+			            else {
+			                $('#rooms').append('<div><br><a href="#" onclick="switchRoom(\''+value+'\');">' + value + '</a></br><br></div>');
+			            }
+			            //alert(value);
+			        });
+			        
+			    });
+
+			// function switchRoom(room){
+				
+			//         socket.emit('switchRoom', room);
+   // 			}
+   			// socket.on('updateUsersRoom',function(room){
+   			// 	var clients = io.sockets.clients(room);
+   			// 	for(var i in clients)
+   			// 	{
+
+   			// 	}
+   			// });
+			socket.on('updateroomusers', function(roomusers) {
+				$("#roomUsers").empty();
+				$.each(roomusers, function (key, value) {
+				$('#roomUsers').append(' <br>' +value+' <br>');
+				});
+			});
 
 			$messageForm.submit(function(e){
 				e.preventDefault();
+				
 				socket.emit('send message', $messageBox.val(),function(data){
-					$chat.append('<br><span class="err"><b> Error :</b>' + data + "</span><br/><br>");
-				});
+						$chat.append('<br><span class="err"><b> Error :</b>' + data + "</span><br/><br>");
+					});
 				$messageBox.val('');
+				
+				
 			});
 
 		 /*	socket.on('load old messages', function(docs){
@@ -239,26 +293,72 @@
 				}
 
 			}); */
+			// //var ctx = document.getElementById('canvas').getContext('2d');
+
+			// socket.on("image", function(info) {
+			// 	  if (info.image) {
+			// 	    var img = new Image();
+			// 	    img.src = 'data:image/jpeg;base64,' + image.buffer;
+			// 	    ctx.drawImage(img, 0, 0);
+			// 	  }
+			// });
 
 			socket.on('new message',function(data){
-				displayMsg(data);
+				if(data.nick== 'SERVER')
+					{
+						$chat.append('<br><b>' + data.nick + ':</b>' + data.msg + "</br><br>");
+					}
+				else {
+					displayMsg(data);
+				}
 			});
 			socket.on('own message',function(data){
-				$chat.append('<br><span class="own_msg"><b>' + data.nick + ':</b>' + data.msg + "</span><br/><br>");
+				$chat.append('<br><span class="own_msg">'+ data.msg + "</span></br><br>");
 			});
 			function displayMsg(data){
-				$chat.append('<br><span class="msg"><b>' + data.nick + ':</b>' + data.msg + "</span><br/><br>");
+				$chat.append('<br><span class="msg"><b>' + data.nick + ':</b>' + data.msg + "</span></br><br>");
 			
 			}
 			socket.on('whisper', function(data){
-				$chat.append('<br><span class="whisper"><b>' + data.nick + ':</b>' + data.msg + "</span><br/><br>");
+				$chat.append('<br><span class="whisper"><b>' + data.nick + ':</b>' + data.msg + "</span></br><br>");
 
 			});
 			socket.on('own whisper', function(data){
-				$chat.append('<br><span class="own_whisper"><b>To ' + data.nick + ':</b>'   + data.msg + "</span><br/><br>");
+				$chat.append('<br><span class="own_whisper"><b>To ' + data.nick + ':</b>'   + data.msg + "</span></br><br>");
 
 			});
 		});
 	</script>
-</body>
-</html>
+<body>
+	<div id="contentWrap">
+		<div id="chatWrap">
+			<header>
+   				<h1>Chat Window</h1>
+			</header>
+			<div id="chat"></div>
+			<div id="form">
+				<form id="send-message">
+					<input size="125" id="message"></input>
+					<input type="submit", id= "datasend",value="Send"></input>
+				</form>
+			</div>
+		</div>
+		<div id="userwrap">
+			<header>
+				<h1> Users</h1>
+			</header>
+			<div id="roomUsers"></div>
+			
+		</div>
+		<div id="roomwrap">
+			<header>
+					<h1> Rooms</h1>
+			</header>
+			<div id="rooms"></div>
+		</div>
+	</div>
+<!-- 
+</head>
+<body>
+</bod
+</html> -->
