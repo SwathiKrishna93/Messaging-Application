@@ -96,7 +96,7 @@ io.sockets.on('connection',function(socket){
           				else
           				{	
           					users[name].emit('whisper',{msg:msg, nick:socket.nickname});
-          					users[socket.nickname].emit('own whisper',{msg:msg, nick:name});
+          					users[socket.nickname].emit('own whisper',{msg:msg, nick:'To '+name});
           				}
           					
           				console.log('Whisper!');	
@@ -114,9 +114,12 @@ io.sockets.on('connection',function(socket){
 			//newMsg.save(function(err){
 			//	if(err) throw err;
 			//io.sockets.emit('new message',{msg:msg, nick:socket.nickname});
-			socket.broadcast.to(socket.room).emit('new message',{msg:msg, nick:socket.nickname});
-			users[socket.nickname].emit('own message',{msg:msg, nick:socket.nickname});
-			
+			if (msg == '')
+				callback('Empty message!');
+			else{
+				socket.broadcast.to(socket.room).emit('new message',{msg:msg, nick:socket.nickname});
+				users[socket.nickname].emit('own message',{msg:msg, nick:socket.nickname});
+			}
 			//io.sockets.in(socket.room).emit('new message', {nick:socket.nickname, msg:msg});
 
 			//});for(var i = 0; i < clients.length; i++) {
