@@ -242,7 +242,10 @@
 				}
 				$users.html(html);
 			});
-
+			
+			window.onbeforeunload = function() {
+        			return "Dude, are you sure you want to leave? Think of the kittens!";
+    			}
 			
 			socket.on('updaterooms', function(rooms, current_room) {
 			        $('#rooms').empty();
