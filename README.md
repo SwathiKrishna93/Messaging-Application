@@ -27,7 +27,7 @@ the room he/she wants to join.
 If a user wants to leave the chat application at any time, he/she can just close
 the tab and he/she gets logged out automatically.
 
-On Refreshing the page, a prompt comes asking whether the user wants to reload warning he/she would be logged out if he/she chooses to reload.
+On Refreshing the page or when the user tries to close the tab, a prompt comes asking whether the user wants to reload warning he/she would be logged out if he/she chooses to reload/close the tab.
 
 Messaging
 
